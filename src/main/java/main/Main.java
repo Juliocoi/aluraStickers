@@ -1,41 +1,35 @@
 package main;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Map;
 
 public class Main {
   public static void main(String[] args) throws Exception {
-    String urlApi = "https://raw.githubusercontent.com/alura-cursos/imersao-java-2-api/main/TopMovies.json";
-    URI uriCreate = URI.create(urlApi);
-    HttpClient client = HttpClient.newHttpClient();
-    HttpRequest request = HttpRequest.newBuilder(uriCreate).GET().build();
+//    String urlApi = "https://raw.githubusercontent.com/alura-cursos/imersao-java-2-api/main/TopMovies.json";
+//    ContentExtractor contentExtractor = new ContentExtractorImdbApi();
 
-    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-    String body = response.body();
-    // filtragem dos dados.
-    JsonParser jsonParser = new JsonParser();
+    String urlApi= "https://api.nasa.gov/planetary/apod?api_key=WZpKstdhoiJmbMvDK6ftjvY3b9UYSQd5F2fyZqqp&start_date=2022-06-12&end_date=2022-06-14";
+    ContentExtractor contentExtractor = new ContentExtractorNasaApi();
 
-    List<Map<String, String>> movieList = jsonParser.parse(body);
+    ClientHttp http = new ClientHttp();
+    String json = http.searchData(urlApi);
 
+// extração e manipulação dos dados
+    List<Content> contentsList = contentExtractor.contentsExtraction(json);
     FigureFactory factory = new FigureFactory();
 
-    for (Map<String, String> movie : movieList) {
-      String urlImage = movie.get("image");
-      String movieTitle = movie.get("title");
-      String archiveName = movieTitle + ".png";
+    for (int i = 0; i < 3; i++) {
 
-      InputStream inputStream = new URL(urlImage).openStream();
+      Content content = contentsList.get(i);
+
+      InputStream inputStream = new URL(content.getUrlImage()).openStream();
+      String archiveName = content.getTitle() + ".png";
 
       factory.prodution(inputStream,archiveName);
-      System.out.printf("\u001b[1m Rank:\u001b[m " + movie.get("rank") + "\n");
-      System.out.printf("\u001b[1m Título:\u001b[m" + movieTitle + "\n");
-      System.out.printf("\u001b[1m imDbRating:\u001b[m " + movie.get("imDbRating") + "\n");
+//      System.out.printf("\u001b[1m Rank:\u001b[m " + content.get("rank") + "\n");
+//      System.out.printf("\u001b[1m Título:\u001b[m" + content.getTitle() + "\n");
+//      System.out.printf("\u001b[1m imDbRating:\u001b[m " + content.get("imDbRating") + "\n");
       System.out.println();
     }
   }
